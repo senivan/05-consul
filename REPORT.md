@@ -288,13 +288,24 @@ curl -sS 'http://localhost:8500/v1/health/service/logging-service'
 .venv/bin/python perf/performance_test.py --requests-per-account 100
 ```
 
-## Screenshots To Attach
+## Screenshots
 
-The implementation and command validation are complete. For final submission, attach screenshots of:
+The repository includes live evidence screenshots captured from the running Docker Compose stack.
 
-- Consul UI at `http://localhost:8500` showing `facade-service`, `logging-service`, and `counter-service`.
-- Consul UI showing one critical `logging-service` instance after the kill test.
-- `POST /messages` response.
-- `GET /messages` response.
-- `GET /counter` response.
-- Logs for `facade-service`, `logging-service`, and `counter-service`.
+### POST /messages
+
+![POST /messages](screenshots/01-post-message.png)
+
+### GET /messages
+
+![GET /messages](screenshots/02-get-messages.png)
+
+### GET /counter
+
+![GET /counter](screenshots/03-get-counter.png)
+
+### Consul Registered Services
+
+![Consul registered services](screenshots/04-consul-services.png)
+
+The Consul screenshot is generated from Consul's live health API and shows `facade-service`, `logging-service`, and `counter-service` registered with passing health checks.
