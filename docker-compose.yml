@@ -1,0 +1,73 @@
+services:
+  consul:
+    image: hashicorp/consul:1.20
+    command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
+    ports:
+      - "8500:8500"
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  hazelcast:
+    image: hazelcast/hazelcast:5.5
+    environment:
+      HZ_CLUSTERNAME: dev
+    ports:
+      - "5701:5701"
+
+  consul-kv-seed:
+    build: .
+    command: ["python", "scripts/seed_consul_kv.py"]
+    environment:
+      CONSUL_HTTP_ADDR: http://consul:8500
+    depends_on:
+      - consul
+
+  facade-service:
+    build: .
+    command: ["python", "-m", "uvicorn", "services.facade_service.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      CONSUL_HTTP_ADDR: http://consul:8500
+      SERVICE_PORT: "8000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      consul-kv-seed:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+      hazelcast:
+        condition: service_started
+
+  logging-service:
+    build: .
+    command: ["python", "-m", "uvicorn", "services.logging_service.main:app", "--host", "0.0.0.0", "--port", "8001"]
+    environment:
+      CONSUL_HTTP_ADDR: http://consul:8500
+      SERVICE_PORT: "8001"
+    depends_on:
+      consul-kv-seed:
+        condition: service_completed_successfully
+      hazelcast:
+        condition: service_started
+
+  counter-service:
+    build: .
+    command: ["python", "-m", "uvicorn", "services.counter_service.main:app", "--host", "0.0.0.0", "--port", "8002"]
+    environment:
+      CONSUL_HTTP_ADDR: http://consul:8500
+      SERVICE_PORT: "8002"
+    depends_on:
+      consul-kv-seed:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+
