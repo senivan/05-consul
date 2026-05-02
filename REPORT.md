@@ -4,7 +4,7 @@
 
 Repository branch: `micro_consul`
 
-GitHub link: not configured locally yet. `git remote -v` returned no remote. Add the GitHub URL after pushing this repository.
+GitHub link: https://github.com/senivan/05-consul/tree/micro_consul
 
 Implementation variant: Consul.
 
